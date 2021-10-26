@@ -14,6 +14,7 @@ class Pawn(Piece):
 
     def legalMoves(self):
         # TODO: CANNOT TAKE PIECES IN FRONT
+        # Special Moveset we just override the parent func
 
         xInt, yInt = self.parseLocation()
 
@@ -23,9 +24,11 @@ class Pawn(Piece):
             direction = 1
         else:
             direction = -1
-        
+
         possibleMoves.append(self.returnLetterNumCord((xInt + direction), yInt))
-        
+
         if self.firstMove:
             possibleMoves.append(self.returnLetterNumCord((xInt + (direction * 2)), yInt))
             # list of legal moves is +1 and +2 or -1 -2 respectively. (LETTER)
+
+        return possibleMoves

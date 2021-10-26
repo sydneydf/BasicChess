@@ -12,24 +12,5 @@ class Knight(Piece):
 
     # TODO: WILL THIS WORK?
     def legalMoves(self):
-        # Min move = 1,1 max = 8,8 #Anything else is an illegal move
-        xInt, yInt = self.parseLocation()  # e.g. 1, 4
-        # RETURN LIST OF LEGAL MOVES
+        return self.otherMoves()
 
-        legalList = []
-
-        # will this reference to unchecked work?
-        for moveTuple in self.uncheckedTupleMoves:
-            unpackedX, unpackedY = moveTuple
-
-            possibleXMove = xInt + unpackedX
-            possibleYMove = yInt + unpackedY
-
-            if possibleXMove > 8 or possibleXMove < 1:
-                continue
-            elif possibleYMove > 8 or possibleYMove < 1:
-                continue
-            else:
-                legalList.append(self.returnLetterNumCord(possibleXMove, possibleYMove))
-
-        # TODO: This list only factors in out of bounds moves, Maybe this is all we need?

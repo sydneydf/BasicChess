@@ -63,7 +63,6 @@ class Game:
         # TODO Check if K on board less than 2, then output the colour of remaining King
         pass
 
-    # TODO: Figure out  Superclass Factory Polymorphism, Ask Sandar??
 
     # Will this work??
     # def resetBoard(self):

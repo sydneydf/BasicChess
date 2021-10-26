@@ -9,17 +9,4 @@ class Rook(Piece):
         return "R"
 
     def legalMoves(self):
-        xInt, yInt = self.parseLocation()
-        # 2 checks, Horizontal and vertical
-        intTupleMoves = [zip(range(xInt + 1, 9), yInt),  # Up
-                         zip(range(xInt - 1, 0, -1), yInt),  # Down
-                         zip(xInt, range(xInt - 1, 0, -1)),  # Left
-                         zip(xInt, range(xInt + 1, 9))  # Right
-                         ]
-
-        parsedMoveList = []
-        for intTupleMove in intTupleMoves:
-            intX, intY = intTupleMove
-            parsedMoveList.append(self.returnLetterNumCord(intX, intY))
-
-        return parsedMoveList
+        return self.linearSlides()

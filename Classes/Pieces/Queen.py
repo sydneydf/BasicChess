@@ -9,24 +9,8 @@ class Queen(Piece):
         return "Q"
 
     def legalMoves(self):
-        xInt, yInt = self.parseLocation()
+        legalMoves = []
+        legalMoves.extend(self.linearSlides())
+        legalMoves.extend(self.diagonalSlides())
 
-        intTupleMoves = [  # Horizontal and vertical
-            zip(range(xInt + 1, 9), yInt),  # Up
-            zip(range(xInt - 1, 0, -1), yInt),  # Down
-            zip(xInt, range(xInt - 1, 0, -1)),  # Left
-            zip(xInt, range(xInt + 1, 9)),  # Right
-
-            # Diagonal Moves
-            zip(range(xInt + 1, 9), range(yInt + 1, 9)),  # Bottom-Right
-            zip(range(xInt + 1, 9), range(yInt - 1, 0, -1)),  # Bottom-Left
-            zip(range(xInt - 1, 0, -1), range(yInt + 1, 9)),  # Top-Right
-            zip(range(xInt - 1, 0, -1), range(yInt - 1, 0, -1))  # Top-Left
-        ]
-
-        parsedMoveList = []
-        for intTupleMove in intTupleMoves:
-            intX, intY = intTupleMove
-            parsedMoveList.append(self.returnLetterNumCord(intX, intY))
-
-        return parsedMoveList
+        return legalMoves
