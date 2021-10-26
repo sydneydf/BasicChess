@@ -8,9 +8,9 @@ class Knight(Piece):
         self.uncheckedTupleMoves = [(-2, -1), (-2, 1), (2, -1), (2, 1), (-1, -2), (-1, 2), (1, -2), (1, 2)]
 
     def __str__(self):
-        return "N"
+        return self.colour + "N"
 
     # TODO: WILL THIS WORK?
-    def legalMoves(self):
-        return self.otherMoves()
+    def legal_moves(self):
+        return self.other_moves()
 

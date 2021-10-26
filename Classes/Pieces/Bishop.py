@@ -7,7 +7,7 @@ class Bishop(Piece):
         self.uncheckedTupleMoves = []
 
     def __str__(self):
-        return "B"
+        return self.colour + "B"
 
-    def legalMoves(self):
-        return self.diagonalSlides()
+    def legal_moves(self):
+        return self.diagonal_slides()

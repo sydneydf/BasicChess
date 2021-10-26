@@ -1,27 +1,70 @@
 import random
-from Classes.Pieces import Bishop, King, Knight, Pawn, Queen, Rook
 import InvalidMove
 from logging import exception
+
+# Long class imports because in different sub directories
+from Classes.Pieces.Bishop import Bishop
+from Classes.Pieces.King import King
+from Classes.Pieces.Knight import Knight
+from Classes.Pieces.Pawn import Pawn
+from Classes.Pieces.Queen import Queen
+from Classes.Pieces.Rook import Rook
 
 
 class Game:
     # This will need adjusting, Used in Board output print
 
     def __init__(self):
-        self.board = {
-            "A": [" "] * 8,  # "-----------------"
-            "B": [" "] * 8,  # "|R|N|B|Q|K|B|N|R|"s
-            "C": [" "] * 8,  # "-----------------"
-            "D": [" "] * 8,
-            "E": [" "] * 8,
-            "F": [" "] * 8,
-            "G": [" "] * 8,
-            "H": [" "] * 8,
+        self.board = {  # "   1  2  3  4  5  6  7  8"
+            "a": [" "] * 8,  # "--------------------------"
+            "b": [" "] * 8,  # "a|wR|wN|wB|wQ|wK|wB|wN|wR|"
+            "c": [" "] * 8,  # "-------------------------"
+            "d": [" "] * 8,  # "b|wP|wP|wP|wP|wP|wP|wP|wP|"
+            "e": [" "] * 8,  # "--------------------------"
+            "f": [" "] * 8,
+            "g": [" "] * 8,
+            "h": [" "] * 8,
+            # Declaring empty boards
         }
-        self.whiteTeam = []
-        self.blackTeam = []
-        self.horizontalLen = 19
+        # self.horizontalLen = 19
         self.InitGame()
+
+    def reset_board(self):
+        teams = ["w", "b"]
+
+        # Init Pawns
+        for i in range(1, 9):
+            self.board["b"][i] = Pawn(f"b{i}", teams[0])
+            self.board["g"][i] = Pawn(f"b{i}", teams[1])
+
+        backLinePlace = {"R": [1, 8], "N": [2, 7], "B": [3, 6], "Q": [4], "K": [5]}
+
+        # First time using enumerate, A very "Pythonic way to loop"
+        # enumerate loops return 2 loop variables:
+        # count - current count of loop
+        # value - current value at the current iteration of the loop
+
+        # makes it so we dont have to have a counter declared outside and constantly update it
+        # for count, team in enumerate(teams):
+
+        # TODO: NEED TO CONSOLIDATE THIS CODE
+        for pos in backLinePlace["R"]:
+            self.board["a"][pos] = Rook(f"a{pos}", "w")
+            self.board["h"][pos] = Rook(f"h{pos}", "b")
+
+        for pos in backLinePlace["N"]:
+            self.board["a"][pos] = Knight(f"a{pos}", "w")
+            self.board["h"][pos] = Knight(f"h{pos}", "b")
+
+        for pos in backLinePlace["B"]:
+            self.board["a"][pos] = Bishop(f"a{pos}", "w")
+            self.board["h"][pos] = Bishop(f"h{pos}", "b")
+
+        self.board["a"][backLinePlace['Q'][0]] = Queen(f"a{backLinePlace['Q'][0]}", "w")
+        self.board["h"][backLinePlace['Q'][0]] = Queen(f"a{backLinePlace['Q'][0]}", "b")
+
+        self.board["a"][backLinePlace['K'][0]] = King(f"a{backLinePlace['K'][0]}", "w")
+        self.board["h"][backLinePlace['K'][0]] = King(f"a{backLinePlace['K'][0]}", "b")
 
     def printHorizontalCordNums(self):
         # Print Numbers for top of board
@@ -63,39 +106,6 @@ class Game:
         # TODO Check if K on board less than 2, then output the colour of remaining King
         pass
 
-
-    # Will this work??
-    # def resetBoard(self):
-    #     teams = ["w", "b"]
-    #     backLineRows = ["a", "h"]
-    #     # all moves referenced here need index adjusting - 1
-    #     placement_Letters = alphabet[:8]  # Gets letters from 0 to 8
-    #     # we want A and H for placing backlines
-    #
-    #     backLinePlace = {"R": [1, 8], "B": [2, 7], "N": [3, 6], "Q": [4], "K": [5]}
-    #
-    #     # TODO: Enclose in loop of colours?
-    #
-    #     for backLine in backLineRows:
-    #         currTeam = 0
-    #         currentTeam = teams[currTeam]
-    #         for piece, posList in backLinePlace.items():
-    #             for pos in posList:
-    #                 desiredPlacement = backLine + str(pos
-    #                 # TODO: Create Piece Here with desiredPlacement
-    #
-    #     # B And G for Pawn Placement for i in range(8): place on B and G
-    #
-    #     # Deprecated
-    #     for i in range(8):
-    #         # Assign backline
-    #         self.board["A"][i] = self.board["H"][i] = backline[i]
-    #
-    #         # TODO: Fix potential I index here
-    #         self.board["C"][i] = self.board["D"][i] = self.board["E"][i] = self.board["F"][i] = [" "]
-    #         # Assign Pawns
-    #         self.board["B"][i] = self.board["G"][i] = "P"
-
     def writeState2File(self):
         exception("Not implemented")
         pass
@@ -135,4 +145,6 @@ class Game:
         end = False
         while not end:
             resignationPrompt = input("Press Enter to start turn, Anything else will exit!")
-            if resignationPrompt != "": end = True
+            if resignationPrompt != "":
+                end = True
+

@@ -6,7 +6,7 @@ class Rook(Piece):
         super().__init__(_pieceLocation, _colour)
 
     def __str__(self):
-        return "R"
+        return self.colour + "R"
 
-    def legalMoves(self):
-        return self.linearSlides()
+    def legal_moves(self):
+        return self.linear_slides()
