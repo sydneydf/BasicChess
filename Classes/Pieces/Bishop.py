@@ -10,4 +10,4 @@ class Bishop(Piece):
         return self.colour + "B"
 
     def legal_moves(self):
-        return self.diagonal_slides()
+        return super().diagonal_slides()

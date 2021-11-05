@@ -12,5 +12,5 @@ class Knight(Piece):
 
     # TODO: WILL THIS WORK?
     def legal_moves(self):
-        return self.other_moves()
+        return super().other_moves()
 

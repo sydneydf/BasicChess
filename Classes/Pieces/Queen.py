@@ -10,7 +10,7 @@ class Queen(Piece):
 
     def legal_moves(self):
         legalMoves = []
-        legalMoves.extend(self.linear_slides())
-        legalMoves.extend(self.diagonal_slides())
+        legalMoves.extend(super().linear_slides())
+        legalMoves.extend(super().diagonal_slides())
 
         return legalMoves
