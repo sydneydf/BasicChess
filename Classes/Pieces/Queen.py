@@ -12,5 +12,5 @@ class Queen(Piece):
         legalMoves = []
         legalMoves.extend(super().linear_slides())
         legalMoves.extend(super().diagonal_slides())
-
+        # TODO: CHECK WHATS IN THESE LISTS and then check tuple unpack in normal moves
         return legalMoves

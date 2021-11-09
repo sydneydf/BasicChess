@@ -5,7 +5,7 @@ class Piece(object):
     def __init__(self, _piece_location: str, _team: str = "b"):  # _team or color, default to black
         # self.type = _PieceID  # Rook, Horse, Bishop, Queen, King or Pawn
         self.currentLocation = _piece_location  # Do we need this?? We could use this to calculate post of legal moves
-
+        # ^this references spot on board and not spot on player's version board (Indexing from true 0)
         self.colour = _team  # White or Black, White always goes first
 
         self.uncheckedTupleMoves = []  # TODO: THIS IS DIFFERENT FOR EVERY CHILD CLASS, MAY NOT WORK
@@ -23,7 +23,7 @@ class Piece(object):
         # example: d would return 4 instead of 3
         xInt = ascii_lowercase.find(xString)
         # Returns tuple so we unpack tuple on methodCall
-        return xInt, yInt - 1
+        return xInt, yInt
 
     # technically static but kinds belongs to Piece class
     # We are trying out pythons type hinting here
@@ -46,13 +46,15 @@ class Piece(object):
     # @User: "SuperBiasedMan"
     # Indepth learnt the usage of the setup, a very compact iteration
     def linear_slides(self) -> list[tuple[str, int]]:
+        print(self.currentLocation)
         xInt, yInt = self.parse_location()
         # 2 checks, Horizontal and vertical
-        intTupleMoves = [zip(range(xInt, 8), [yInt] * 8),  # Up
-                         zip(range(xInt, -1, -1), [yInt] * 8),  # Down
-                         zip([xInt] * 8, range(xInt, -1, -1)),  # Left
-                         zip([xInt] * 8, range(xInt, 8))  # Right
-                         ]
+        # surely theres a way to put these in a pythonic way
+        intTupleMoves = []
+        intTupleMoves.extend(zip(range(xInt, 8), [yInt] * (7 - xInt)))  # Up
+        intTupleMoves.extend(zip(range(xInt, -1, -1), [yInt] * xInt))  # Down
+        intTupleMoves.extend(zip([xInt] * yInt, range(yInt, -1, -1)))  # Left
+        intTupleMoves.extend(zip([xInt] * (7 - yInt), range(yInt, 8)))  # Right
 
         parsedMoveList = []
         for intTupleMove in intTupleMoves:
@@ -62,15 +64,16 @@ class Piece(object):
         return parsedMoveList
 
     def diagonal_slides(self) -> list[tuple[str, int]]:
+        print(self.currentLocation)
         # Min move = 1,1 max = 8,8 #Anything else is an illegal move
         xInt, yInt = self.parse_location()  # e.g. 1, 4
         # RETURN LIST OF LEGAL MOVES
 
-        intTupleMoves = [zip(range(xInt, 8), range(yInt, 8)),  # Bottom-Right
-                         zip(range(xInt, 8), range(yInt, -1, -1)),  # Bottom-Left
-                         zip(range(xInt, -1, -1), range(yInt, 8)),  # Top-Right
-                         zip(range(xInt, -1, -1), range(yInt, -1, -1))  # Top-Left
-                         ]
+        intTupleMoves = []
+        intTupleMoves.extend(zip(range(xInt, 8), range(yInt, 8)))  # Bottom-Right
+        intTupleMoves.extend(zip(range(xInt, 8), range(yInt, -1, -1)))  # Bottom-Left
+        intTupleMoves.extend(zip(range(xInt, -1, -1), range(yInt, 8)))  # Top-Right
+        intTupleMoves.extend(zip(range(xInt, -1, -1), range(yInt, -1, -1)))  # Top-Left
 
         parsedMoveList = []
         for intTupleMove in intTupleMoves:
@@ -80,6 +83,7 @@ class Piece(object):
         return parsedMoveList
 
     def other_moves(self) -> list[tuple[str, int]]:
+        print("Pieces current location: " + self.currentLocation)
         xInt, yInt = self.parse_location()
 
         legalList = []
@@ -91,9 +95,9 @@ class Piece(object):
             possibleXMove = xInt + unpackedX
             possibleYMove = yInt + unpackedY
 
-            if possibleXMove > 7 or possibleXMove < 1:
+            if possibleXMove > 7 or possibleXMove < 0:
                 continue
-            elif possibleYMove > 7 or possibleYMove < 1:
+            elif possibleYMove > 7 or possibleYMove < 0:
                 continue
             else:
                 legalList.append(self.return_letter_numCord(possibleXMove, possibleYMove))

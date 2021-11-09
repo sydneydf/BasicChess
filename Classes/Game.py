@@ -70,10 +70,10 @@ class Game:
             self.board["h"][pos] = Bishop(f"h{pos}", "b")
 
         self.board["a"][backLinePlace['Q'][0]] = Queen(f"a{backLinePlace['Q'][0]}", "w")
-        self.board["h"][backLinePlace['Q'][0]] = Queen(f"a{backLinePlace['Q'][0]}", "b")
+        self.board["h"][backLinePlace['Q'][0]] = Queen(f"h{backLinePlace['Q'][0]}", "b")
 
         self.board["a"][backLinePlace['K'][0]] = King(f"a{backLinePlace['K'][0]}", "w")
-        self.board["h"][backLinePlace['K'][0]] = King(f"a{backLinePlace['K'][0]}", "b")
+        self.board["h"][backLinePlace['K'][0]] = King(f"h{backLinePlace['K'][0]}", "b")
 
         # HOW can we have a persistent updating reference that updates self.kings with current kings state instead of
         # straight clones? Getter Setter?
@@ -154,8 +154,8 @@ class Game:
                         raise InvalidMove("Cannot Castle if space between is not empty")
 
             # TODO: If all checks pass then we should have this castle or swap occur here, UPDATE: PROBABLY
-            selectedPiece.currentLocation = f"{moveXstr}{moveYint + 1}"
-            squareToTake.currentLocation = f"{currXstr}{currYint + 1}"
+            selectedPiece.currentLocation = f"{moveXstr}{moveYint}"
+            squareToTake.currentLocation = f"{currXstr}{currYint}"
 
             self.board[moveXstr][moveYint], self.board[currXstr][currYint] = selectedPiece, squareToTake
             selectedPiece.hasMoved = squareToTake.hasMoved = True
@@ -166,9 +166,7 @@ class Game:
         pass
 
     def pawn_move(self, _combinedSelectCord, _combinedMoveCord):
-        print(f"Parsed in Combined Selected cord: {_combinedSelectCord}")
-        print(f"Parsed in Combined Move cord: {_combinedMoveCord}")
-
+        print("DEBUGGING: Pawn Move triggered")
         currXstr, currYint = _combinedSelectCord
         currYint = int(currYint)
 
@@ -196,7 +194,7 @@ class Game:
         elif currYint == 0 and isinstance(self.board[ascii_lowercase[currXint + foward]][currYint + 1], Piece):
             legal_moves.append((ascii_lowercase[currXint + foward], currYint + 1))
         else:
-            for Ycheck in range(currYint - 1, currYint + 1, 2):
+            for Ycheck in range(currYint - 1, currYint + 2, 2):
                 squareCheck = self.board[moveXstr][Ycheck]
                 if isinstance(squareCheck, Piece):
                     legal_moves.append((ascii_lowercase[currXint + foward], Ycheck))
@@ -206,28 +204,34 @@ class Game:
 
         if (moveXstr, moveYint) in legal_moves:
             self.king_destroyed_check(self.board[moveXstr][moveYint])
-            selectedPiece.currentLocation = f"{moveXstr}{moveYint + 1}"
+            selectedPiece.currentLocation = f"{moveXstr}{moveYint}"
             selectedPiece.hasMoved = True
             print(f"Attempting to move from {currXstr}, {currYint} TO move square on {moveXstr}{moveYint}")
             self.board[moveXstr][moveYint], self.board[currXstr][currYint] = selectedPiece, "  "
             return True
 
-    def normal_move(self, _combinedSelectCord, _combinedMoveCord):
+    def normal_move(self, _combinedSelectCord, _combinedMoveCord, emptySquare=False):
+        print("DEBUGGING: Normal Move triggered")
+        print(f"DEBUGGING: selected cord {_combinedSelectCord}")
+        print(f"DEBUGGING: move cord {_combinedMoveCord}")
+
         currXstr, currYint = _combinedSelectCord
         currYint = int(currYint)
 
         moveXstr, moveYint = _combinedMoveCord
-        moveYint = int(currYint)
+        moveYint = int(moveYint)
 
         selectedPiece = self.board[currXstr][currYint]
         squareToTake = self.board[moveXstr][moveYint]
 
-        for tupleCord in selectedPiece.legal_moves():
-            if tupleCord == (moveXstr, moveYint):
-                selectedPiece.currentLocation = f"{moveXstr}{moveYint + 1}"
+        legal_moves = selectedPiece.legal_moves()
+        for tupleCord in legal_moves:
+            print(f"DEBUGGING Legal move cords: {tupleCord[0]}, {tupleCord[1]}")
+            if (moveXstr, moveYint) == (tupleCord[0], tupleCord[1]):
+                selectedPiece.currentLocation = f"{moveXstr}{moveYint}"
                 self.king_destroyed_check(self.board[moveXstr][moveYint])
                 self.board[moveXstr][moveYint], self.board[currXstr][currYint] = selectedPiece, "  "
-                return
+                return True
         return
 
     # initiate move on board
@@ -235,8 +239,8 @@ class Game:
 
     # This might be our longest method, we might have to break this one down alot
 
-    # TODO Seperate move into the above funcs
-    # TODO: NUMBER1 CHECK IF WE ARE REVERTING LOCATION ONLY IN GAME METHOD -1 and +1 indices etc
+    # TODO: ROOK, BISHOP QUEEN NEED TO CHECK IF THERE IS A PIECE IN BETWEEN BEFORE MOVE
+
     def make_move(self, _colour):
 
         # Here we handle all move possibilities
@@ -262,7 +266,10 @@ class Game:
         #     raise InvalidMove("Can't select enemy team colour")
 
         self.successfulMove = False
+        debug_failedCycles = 0
         while not self.successfulMove:
+            if debug_failedCycles > 0:
+                print(f"Failed Debug cycles = {debug_failedCycles}")
             try:
                 moveXstr, moveYint = self.input_getSquare("Please enter a square to move to")
                 moveXstr: str
@@ -277,46 +284,49 @@ class Game:
                     print(f"DEBUGGING: Pawn Move triggered on {moveXstr}{moveYint}")
                     if self.pawn_move(f"{currXstr}{currYint}", f"{moveXstr}{moveYint}"):
                         self.successfulMove = True
-
                 elif squareToTake == "  ":
                     print("DEBUGGING: Empty Take Move triggered")
 
-                    for tupleCord in selectedPiece.legal_moves():
-                        if (moveXstr, moveYint) == tupleCord:
-                            self.board[moveXstr][moveYint], self.board[currXstr][currYint] = selectedPiece, "  "
-                            self.board[moveXstr][moveYint].currentLocation = f"{moveXstr}{moveYint}"
-                            self.successfulMove = True
-                    break
-
-                # Check for KING/ROOK CASTLING FIRST
-                # Only King can INITIATE CASTLE
-                elif isinstance(selectedPiece, King) == isinstance(squareToTake, Rook) == (
-                        selectedPiece.colour == squareToTake.colour):
-                    print("DEBUGGING: Castle Move triggered")
-                    if self.castle_init(f"{currXstr}{currYint}", f"{moveXstr}{moveYint}"):
+                    if self.normal_move(f"{currXstr}{currYint}", f"{moveXstr}{moveYint}"):
                         self.successfulMove = True
                     else:
-                        raise InvalidMove("Could not Complete Empty move - Try moving again")
+                        raise InvalidMove("Could not Complete normal move - Try moving again")
+                        pass
+                    # for tupleCord in selectedPiece.legal_moves():
+                    #     if (moveXstr, moveYint) == tupleCord:
+                    #         self.board[moveXstr][moveYint], self.board[currXstr][currYint] = selectedPiece, "  "
+                    #         self.board[moveXstr][moveYint].currentLocation = f"{moveXstr}{moveYint}"
+
+                    # Check for KING/ROOK CASTLING FIRST
+                    # Only King can INITIATE CASTLE
+                elif isinstance(selectedPiece, King) and isinstance(squareToTake, Rook):
+                    print(type(selectedPiece), type(squareToTake))
+                    if selectedPiece.colour == squareToTake.colour:
+                        print("DEBUGGING: Castle Move triggered")
+                        if self.castle_init(f"{currXstr}{currYint}", f"{moveXstr}{moveYint}"):
+                            self.successfulMove = True
+                    else:
+                        raise InvalidMove("Try moving again! - Castle move nto suitable")
                         pass
 
-                # Eliminate teamkill AFTER castle check
+                    # Eliminate teamkill AFTER castle check
                 elif selectedPiece.colour == squareToTake.colour:
+                    print("Colour check")
                     raise InvalidMove("Cannot take own piece - choose again")
                     # break?
 
                 else:
-                    print("DEBUGGING: Normal Move triggered")
+                    print("Else of Move")
                     if self.normal_move(f"{currXstr}{currYint}", f"{moveXstr}{moveYint}"):
                         self.successfulMove = True
                     else:
                         raise InvalidMove("Could not Complete normal move - Try moving again")
                         pass
             except InvalidMove:
-                pass
+                debug_failedCycles += 1
+                continue
 
-
-             # TODO: Check if instance of Move XY is King and update self.kings
-
+    # Check if instance of Move XY is King and update self.kings
     def king_destroyed_check(self, _takenPiece):
         if isinstance(_takenPiece, King):
             self.kings.remove(_takenPiece)
