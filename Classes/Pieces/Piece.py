@@ -3,24 +3,17 @@ from string import ascii_lowercase
 
 class Piece(object):
     def __init__(self, _piece_location: str, _team: str = "b"):  # _team or color, default to black
-        # self.type = _PieceID  # Rook, Horse, Bishop, Queen, King or Pawn
-        self.currentLocation = _piece_location  # Do we need this?? We could use this to calculate post of legal moves
-        # ^this references spot on board and not spot on player's version board (Indexing from true 0)
+        # currentLocation references spot on board and not spot on player's version board (Indexing from true 0)
+        self.currentLocation = _piece_location
         self.colour = _team  # White or Black, White always goes first
 
-        self.uncheckedTupleMoves = []  # TODO: THIS IS DIFFERENT FOR EVERY CHILD CLASS, MAY NOT WORK
+        self.uncheckedTupleMoves = []
         self.isAlive = True
-
-    # When del <piece object> is called we pass in the newpiece that occupies that square and return that piece
-    # def __del__(self, newPiece: object) -> object:
-    #     return newPiece
 
     # parse current location into ints that we can check legal moves
     def parse_location(self) -> tuple[int, int]:
         xString, yString = self.currentLocation
         yInt = int(yString)
-        # add one to xInt so it corresponds to alphabet if it wasn't indexed to zero
-        # example: d would return 4 instead of 3
         xInt = ascii_lowercase.find(xString)
         # Returns tuple so we unpack tuple on methodCall
         return xInt, yInt
@@ -30,8 +23,6 @@ class Piece(object):
     def return_letter_numCord(self, _xInt: int, _yInt: int) -> tuple[str, int]:
         xLetter = ascii_lowercase[_xInt]
         return xLetter, _yInt
-
-    # TODO: TRIPLE CHECK INDEXING PASSED TO MOVE FUNCS
 
     # MY FAVOURITE PYTHON DISCOVERY
     # range function follows 2 parameters with an optional third
@@ -45,8 +36,8 @@ class Piece(object):
     # ZIP Functions credit to https://codereview.stackexchange.com/questions/105273/finding-all-legal-bishop-moves
     # @User: "SuperBiasedMan"
     # Indepth learnt the usage of the setup, a very compact iteration
+
     def linear_slides(self) -> list[tuple[str, int]]:
-        print(self.currentLocation)
         xInt, yInt = self.parse_location()
         # 2 checks, Horizontal and vertical
         # surely theres a way to put these in a pythonic way
@@ -64,8 +55,7 @@ class Piece(object):
         return parsedMoveList
 
     def diagonal_slides(self) -> list[tuple[str, int]]:
-        print(self.currentLocation)
-        # Min move = 1,1 max = 8,8 #Anything else is an illegal move
+        # Min move = 0,0 max = 7,7 #Anything else is an illegal move
         xInt, yInt = self.parse_location()  # e.g. 1, 4
         # RETURN LIST OF LEGAL MOVES
 
@@ -83,7 +73,6 @@ class Piece(object):
         return parsedMoveList
 
     def other_moves(self) -> list[tuple[str, int]]:
-        print("Pieces current location: " + self.currentLocation)
         xInt, yInt = self.parse_location()
 
         legalList = []

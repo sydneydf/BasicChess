@@ -12,9 +12,9 @@ from Classes.Pieces.Rook import Rook
 from Classes.Pieces.Piece import Piece
 
 
-class Game:
-    # This will need adjusting, Used in Board output print
+# TODO: CHECK main.py for TODO list
 
+class Game:
     # self.board indexing in functions may cause false positives in PyCharm IDE
     def __init__(self):
         # store king states in memory for quick ref without searching
@@ -36,9 +36,6 @@ class Game:
 
     def reset_board(self):
 
-        # TODO: Will we have problems referencing these piece objects?
-        # Do we have to store them in a team list instead of storing them on the self.board?
-
         teams = ["w", "b"]
 
         # Init Pawns
@@ -47,14 +44,6 @@ class Game:
             self.board["g"][i] = Pawn(f"b{i}", teams[1])
 
         backLinePlace = {"R": [0, 7], "N": [1, 6], "B": [2, 5], "Q": [3], "K": [4]}
-
-        # First time using enumerate, A very "Pythonic way to loop"
-        # enumerate loops return 2 loop variables:
-        # count - current count of loop
-        # value - current value at the current iteration of the loop
-
-        # makes it so we dont have to have a counter declared outside and constantly update it
-        # for count, team in enumerate(teams):
 
         # TODO: NEED TO CONSOLIDATE THIS CODE
         for pos in backLinePlace["R"]:
@@ -75,15 +64,10 @@ class Game:
         self.board["a"][backLinePlace['K'][0]] = King(f"a{backLinePlace['K'][0]}", "w")
         self.board["h"][backLinePlace['K'][0]] = King(f"h{backLinePlace['K'][0]}", "b")
 
-        # HOW can we have a persistent updating reference that updates self.kings with current kings state instead of
-        # straight clones? Getter Setter?
-
         self.kings.append(self.board["a"][4])
         self.kings.append(self.board["h"][4])
 
     def checkWin(self):
-        # TODO Check if K on board less than 2, then output the colour of remaining King
-
         # can we shorten this statement?
         if len(self.kings) == 1:
             return self.kings[0]
@@ -136,22 +120,17 @@ class Game:
         selectedPiece: King = self.board[currXstr][currYint]
         squareToTake: Rook = self.board[moveXstr][moveYint]
 
-        # Do not have to check distance because both pieces have to be in starting squares
-        if selectedPiece.castled == squareToTake.hasMoved == False:
-            # check if any squares in between
-            # Start Cord and End Cord and check in between / pos and neg
-            # Ok we don't need to change x cord, just either rook pos 1 or 8 and king pos 5
+        if selectedPiece.hasMoved == squareToTake.hasMoved == False:
+
             try:
-                # TODO: Adapt these statements into rook, queen, bishop space checks
-                # TODO: Test if break in these statements will work to return while loop move again
                 # 5 < 8
                 if currYint < moveYint:
-                    for Ycheck in range(currYint + 1, moveYint - 1):
+                    for Ycheck in range(currYint + 1, moveYint):
                         if self.board[moveXstr][Ycheck] != "  ":
                             raise InvalidMove("Cannot Castle if space between is not empty")
                 # 5 > 1
                 else:
-                    for Ycheck in range(currYint - 1, moveYint + 1, -1):
+                    for Ycheck in range(currYint - 1, moveYint, -1):
                         if self.board[moveXstr][Ycheck] != "  ":
                             raise InvalidMove("Cannot Castle if space between is not empty")
 
@@ -164,7 +143,6 @@ class Game:
 
             self.board[moveXstr][moveYint], self.board[currXstr][currYint] = selectedPiece, squareToTake
             selectedPiece.hasMoved = squareToTake.hasMoved = True
-            selectedPiece.castled = True
             return True
 
     def pawn_move(self, _combinedSelectCord, _combinedMoveCord):
@@ -214,8 +192,6 @@ class Game:
 
     def normal_move(self, _combinedSelectCord, _combinedMoveCord, emptySquare=False):
         print("DEBUGGING: Normal Move triggered")
-        print(f"DEBUGGING: selected cord {_combinedSelectCord}")
-        print(f"DEBUGGING: move cord {_combinedMoveCord}")
 
         currXstr, currYint = _combinedSelectCord
         currYint = int(currYint)
@@ -230,8 +206,8 @@ class Game:
         for tupleCord in legal_moves:
             print(f"DEBUGGING Legal move cords: {tupleCord[0]}, {tupleCord[1]}")
             if (moveXstr, moveYint) == (tupleCord[0], tupleCord[1]):
-                selectedPiece.currentLocation = f"{moveXstr}{moveYint}"
                 self.king_destroyed_check(self.board[moveXstr][moveYint])
+                selectedPiece.currentLocation = f"{moveXstr}{moveYint}"
                 self.board[moveXstr][moveYint], self.board[currXstr][currYint] = selectedPiece, "  "
                 return True
         return
@@ -239,10 +215,7 @@ class Game:
     # initiate move on board
     # check if not pawn and then initiate capture method
 
-    # This might be our longest method, we might have to break this one down alot
-
     # TODO: ROOK, BISHOP QUEEN NEED TO CHECK IF THERE IS A PIECE IN BETWEEN BEFORE MOVE
-
     def make_move(self, _colour):
 
         # Here we handle all move possibilities
@@ -259,7 +232,6 @@ class Game:
                 selectedPiece = self.board[currXstr][currYint]
             else:
                 print("Non Valid piece selected\n")
-        # this is kind of useless if the above check passes
 
         selectedPiece: Piece
 
@@ -274,8 +246,6 @@ class Game:
                 moveYint: int
 
                 squareToTake = self.board[moveXstr][moveYint]  # Error here might be false positive
-
-                # Illegal moves not working
 
                 # Check for pawn moves
                 if isinstance(selectedPiece, Pawn):
@@ -326,6 +296,7 @@ class Game:
                 continue
 
     # Check if instance of Move XY is King and update self.kings
+    # TODO: NOT WORKING AS INTENDED
     def king_destroyed_check(self, _takenPiece):
         if isinstance(_takenPiece, King):
             self.kings.remove(_takenPiece)

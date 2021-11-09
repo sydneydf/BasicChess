@@ -11,8 +11,6 @@ class Pawn(Piece):
 
     # Custom Method for Pawn
     def get_direction(self):
-
-        # Special Moveset we just override the parent func
         direction = 0
         if self.colour == "w":
             direction = 1
