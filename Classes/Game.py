@@ -137,33 +137,35 @@ class Game:
         squareToTake: Rook = self.board[moveXstr][moveYint]
 
         # Do not have to check distance because both pieces have to be in starting squares
-        if not selectedPiece.castled == selectedPiece.hasMoved == squareToTake.hasMoved:
+        if selectedPiece.castled == squareToTake.hasMoved == False:
             # check if any squares in between
             # Start Cord and End Cord and check in between / pos and neg
             # Ok we don't need to change x cord, just either rook pos 1 or 8 and king pos 5
+            try:
+                # TODO: Adapt these statements into rook, queen, bishop space checks
+                # TODO: Test if break in these statements will work to return while loop move again
+                # 5 < 8
+                if currYint < moveYint:
+                    for Ycheck in range(currYint + 1, moveYint - 1):
+                        if self.board[moveXstr][Ycheck] != "  ":
+                            raise InvalidMove("Cannot Castle if space between is not empty")
+                # 5 > 1
+                else:
+                    for Ycheck in range(currYint - 1, moveYint + 1, -1):
+                        if self.board[moveXstr][Ycheck] != "  ":
+                            raise InvalidMove("Cannot Castle if space between is not empty")
 
-            # TODO: Test if break in these statements will work to return while loop move again
+            except InvalidMove as msg:
+                print(msg)
+                return
 
-            if moveYint < currYint:
-                for Ycheck in range(moveYint + 1, currYint):
-                    if self.board[moveXstr][Ycheck] != "  ":
-                        raise InvalidMove("Cannot Castle if space between is not empty")
-            else:
-                for Ycheck in range(currYint - 1, moveYint, -1):
-                    if self.board[moveXstr][Ycheck] != "  ":
-                        raise InvalidMove("Cannot Castle if space between is not empty")
-
-            # TODO: If all checks pass then we should have this castle or swap occur here, UPDATE: PROBABLY
             selectedPiece.currentLocation = f"{moveXstr}{moveYint}"
             squareToTake.currentLocation = f"{currXstr}{currYint}"
 
             self.board[moveXstr][moveYint], self.board[currXstr][currYint] = selectedPiece, squareToTake
             selectedPiece.hasMoved = squareToTake.hasMoved = True
             selectedPiece.castled = True
-            return
-
-    def same_team(self):
-        pass
+            return True
 
     def pawn_move(self, _combinedSelectCord, _combinedMoveCord):
         print("DEBUGGING: Pawn Move triggered")
@@ -261,10 +263,6 @@ class Game:
 
         selectedPiece: Piece
 
-        # If selecting opponents pieces
-        # if selectedPiece.colour != _colour:
-        #     raise InvalidMove("Can't select enemy team colour")
-
         self.successfulMove = False
         debug_failedCycles = 0
         while not self.successfulMove:
@@ -284,36 +282,36 @@ class Game:
                     print(f"DEBUGGING: Pawn Move triggered on {moveXstr}{moveYint}")
                     if self.pawn_move(f"{currXstr}{currYint}", f"{moveXstr}{moveYint}"):
                         self.successfulMove = True
+                    else:
+                        raise InvalidMove("Pawn move failed")
                 elif squareToTake == "  ":
                     print("DEBUGGING: Empty Take Move triggered")
 
                     if self.normal_move(f"{currXstr}{currYint}", f"{moveXstr}{moveYint}"):
                         self.successfulMove = True
                     else:
-                        raise InvalidMove("Could not Complete normal move - Try moving again")
-                        pass
-                    # for tupleCord in selectedPiece.legal_moves():
-                    #     if (moveXstr, moveYint) == tupleCord:
-                    #         self.board[moveXstr][moveYint], self.board[currXstr][currYint] = selectedPiece, "  "
-                    #         self.board[moveXstr][moveYint].currentLocation = f"{moveXstr}{moveYint}"
+                        raise InvalidMove("Empty Space move not in valid moveset")
 
                     # Check for KING/ROOK CASTLING FIRST
                     # Only King can INITIATE CASTLE
                 elif isinstance(selectedPiece, King) and isinstance(squareToTake, Rook):
-                    print(type(selectedPiece), type(squareToTake))
                     if selectedPiece.colour == squareToTake.colour:
                         print("DEBUGGING: Castle Move triggered")
                         if self.castle_init(f"{currXstr}{currYint}", f"{moveXstr}{moveYint}"):
                             self.successfulMove = True
+                        else:
+                            raise InvalidMove("Castling move failed")
                     else:
-                        raise InvalidMove("Try moving again! - Castle move nto suitable")
-                        pass
+                        # Else must be opposite colour King attacking Rook, Very niche but may happen
+                        if self.normal_move(f"{currXstr}{currYint}", f"{moveXstr}{moveYint}"):
+                            self.successfulMove = True
+                        else:
+                            raise InvalidMove("King cannot take opposite teams Rook?")
 
-                    # Eliminate teamkill AFTER castle check
+                # Eliminate teamkill AFTER castling check
                 elif selectedPiece.colour == squareToTake.colour:
-                    print("Colour check")
+                    print("DEBUGGING: Teamkill Check")
                     raise InvalidMove("Cannot take own piece - choose again")
-                    # break?
 
                 else:
                     print("Else of Move")
@@ -321,8 +319,9 @@ class Game:
                         self.successfulMove = True
                     else:
                         raise InvalidMove("Could not Complete normal move - Try moving again")
-                        pass
-            except InvalidMove:
+
+            except InvalidMove as msg:
+                print(msg)
                 debug_failedCycles += 1
                 continue
 

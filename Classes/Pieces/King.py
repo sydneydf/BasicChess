@@ -6,7 +6,6 @@ class King(Piece):
     def __init__(self, _piece_location, _colour="b"):
         super().__init__(_piece_location, _colour)
         self.castled = False
-        self.hasMoved = False
         # TODO: Ask Sandar if there is a neat way to pass self.uncheckedTupleMoves to Parent function
         self.uncheckedTupleMoves = [(1, 1), (1, 0), (1, -1), (-1, 1), (-1, 0), (-1, -1), (0, 1), (1, -1)]
 
