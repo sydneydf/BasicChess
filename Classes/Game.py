@@ -1,4 +1,5 @@
 import random
+import time
 from string import ascii_lowercase
 import CSV_Writer
 from Classes.InvalidMove import InvalidMove
@@ -20,7 +21,6 @@ class Game:
     # self.board indexing in functions may cause false positives in PyCharm IDE
     def __init__(self):
         # store king states in memory for quick ref without searching
-        self.kings = []
         self.board = {  # "   1  2  3  4  5  6  7  8"
             "a": ["  "] * 8,  # "--------------------------"
             "b": ["  "] * 8,  # "a|wR|wN|wB|wQ|wK|wB|wN|wR|"
@@ -36,6 +36,7 @@ class Game:
         self.writer = None
         self.InitGame()
         self.successfulMove = False
+        self.winner = None
 
     def reset_board(self):
 
@@ -72,17 +73,21 @@ class Game:
         self.board["a"][backLinePlace['K'][0]] = King(f"a{backLinePlace['K'][0]}", "w")
         self.board["h"][backLinePlace['K'][0]] = King(f"h{backLinePlace['K'][0]}", "b")
 
-        self.kings.append(self.board["a"][4])
-        self.kings.append(self.board["h"][4])
-
     # Check if game should be over
     def checkWin(self):
-        # can we shorten this statement?
-        if len(self.kings) == 1:
-            return self.kings[0]
-        else:
-            # no returns so game continues?
-            pass
+        kings = []
+        for xRow, YList in self.board.items():
+            # enumerate iterates over a list and returns current iteration loop + item
+            for Ycord, item in enumerate(YList):
+                if isinstance(item, King):
+                    kings.append(item)
+        if len(kings) == 1:
+            self.winner = kings[0]
+            print("\n" + self.winner.colour + " wins!")
+            print("Game Over! ...")
+            time.sleep(1)
+            print("Exiting")
+            exit()
 
     # Split move into workable cords for self.board
     def move_splitter(self, _move_split: str) -> tuple[str, int]:
@@ -199,7 +204,6 @@ class Game:
         #     print(f"DEBUGGING Legal move cords: {move_cord[0]}, {move_cord[1]}")
 
         if (moveXstr, moveYint) in legal_moves:
-            self.king_destroyed_check(self.board[moveXstr][moveYint])
             selectedPiece.currentLocation = _combinedMoveCord
             selectedPiece.hasMoved = True
             # print(f"Attempting to move from {_combinedSelectCord} TO move square on {_combinedMoveCord}")
@@ -219,7 +223,6 @@ class Game:
         for tupleCord in legal_moves:
             # print(f"DEBUGGING Legal move cords: {tupleCord[0]}, {tupleCord[1]}")
             if (moveXstr, moveYint) == (tupleCord[0], tupleCord[1]):
-                self.king_destroyed_check(self.board[moveXstr][moveYint])
                 selectedPiece.currentLocation = _combinedMoveCord
                 self.board[moveXstr][moveYint], self.board[currXstr][currYint] = selectedPiece, "  "
                 return True
@@ -324,12 +327,6 @@ class Game:
         # print(f"DEBUGGING: Testing make_move return {currXstr}{currYint + 1} {moveXstr}{moveYint + 1}")
         return [f"{currXstr}{currYint + 1}", f"{moveXstr}{moveYint + 1}"]
 
-    # Check if instance of Move XY is King and update self.kings
-    # TODO: NOT WORKING AS INTENDED
-    def king_destroyed_check(self, _takenPiece):
-        if isinstance(_takenPiece, King):
-            self.kings.remove(_takenPiece)
-
     def InitGame(self):
         # Initialize custom CSV_Writer Object
         self.writer = CSV_Writer.CSV_Writer()
@@ -344,13 +341,13 @@ class Game:
         self.reset_board()
 
         # represents a round
-        forfeit = False
-        while not forfeit or self.checkWin() is None:
+        end = False
+        while not end:
             move_row2Write = {'wFrom': '', 'wTo': '', 'bFrom': '', 'bTo': ''}
             for side in sides:
                 resignationPrompt = input("Press Enter to start turn, Anything else will exit>: ")
                 if resignationPrompt != "":
-                    forfeit = True
+                    end = True
                 else:
                     print(f"{side.upper()}'s Turn\n")
                     self.print_board()
@@ -359,10 +356,15 @@ class Game:
                         move_row2Write['wFrom'], move_row2Write['wTo'] = recorded_move
                     else:
                         move_row2Write['bFrom'], move_row2Write['bTo'] = recorded_move
+
+                    if self.checkWin():
+                        end = False
             # Write out the dict to csv after full move completion
             self.writer.row_write(move_row2Write)
-
-        print(f"Game Ended with {self.checkWin()}")
+        if self.winner is not None:
+            print(f"Game Ended with {self.winner.colour}")
+        else:
+            print("Game Forfeited")
         exit()
 
     # Print Optimizations

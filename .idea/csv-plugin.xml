@@ -31,6 +31,27 @@
             </Attribute>
           </value>
         </entry>
+        <entry key="\chessMoves20211110-221039.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="\chessMoves20211110-221811.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="\chessMoves20211110-222952.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
         <entry key="\saved_chessMoves.csv">
           <value>
             <Attribute>
