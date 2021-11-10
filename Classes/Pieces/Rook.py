@@ -9,5 +9,5 @@ class Rook(Piece):
     def __str__(self) -> str:
         return self.colour + "R"
 
-    def potential_moves(self)  -> list[tuple[str, int]]:
+    def potential_moves(self) -> list[tuple[str, int]]:
         return super().linear_slides()

@@ -1,5 +1,6 @@
 import random
 from string import ascii_lowercase
+import CSV_Writer
 from Classes.InvalidMove import InvalidMove
 
 # Long class imports because in different sub directories
@@ -32,6 +33,7 @@ class Game:
             # Declaring empty boards
         }
         self.horizontalLen = 19
+        self.writer = None
         self.InitGame()
         self.successfulMove = False
 
@@ -193,14 +195,14 @@ class Game:
                 if isinstance(squareCheck, Piece):
                     legal_moves.append((ascii_lowercase[currXint + foward], Ycheck))
 
-        for move_cord in legal_moves:
-            print(f"DEBUGGING Legal move cords: {move_cord[0]}, {move_cord[1]}")
+        # for move_cord in legal_moves:
+        #     print(f"DEBUGGING Legal move cords: {move_cord[0]}, {move_cord[1]}")
 
         if (moveXstr, moveYint) in legal_moves:
             self.king_destroyed_check(self.board[moveXstr][moveYint])
             selectedPiece.currentLocation = _combinedMoveCord
             selectedPiece.hasMoved = True
-            print(f"Attempting to move from {_combinedSelectCord} TO move square on {_combinedMoveCord}")
+            # print(f"Attempting to move from {_combinedSelectCord} TO move square on {_combinedMoveCord}")
             self.board[moveXstr][moveYint], self.board[currXstr][currYint] = selectedPiece, "  "
             return True
 
@@ -215,7 +217,7 @@ class Game:
 
         legal_moves = selectedPiece.potential_moves()
         for tupleCord in legal_moves:
-            print(f"DEBUGGING Legal move cords: {tupleCord[0]}, {tupleCord[1]}")
+            # print(f"DEBUGGING Legal move cords: {tupleCord[0]}, {tupleCord[1]}")
             if (moveXstr, moveYint) == (tupleCord[0], tupleCord[1]):
                 self.king_destroyed_check(self.board[moveXstr][moveYint])
                 selectedPiece.currentLocation = _combinedMoveCord
@@ -226,16 +228,21 @@ class Game:
     # initiate move on board
     # check if not pawn and then initiate capture method
 
+    # designed to return record logging of moves
     # TODO: ROOK, BISHOP QUEEN NEED TO CHECK IF THERE IS A PIECE IN BETWEEN BEFORE MOVE
-    def make_move(self, _colour):
+    def make_move(self, _colour) -> list[str, str]:
 
         # Here we handle all move possibilities
 
         # MUST GET A VALID PIECE
         selectSquare: str = "  "  # Raw combined string only used via move_splitter(selectSquare)
         selectedPiece: str = "  "  # Represents specific select spot of dict list
-        currXstr: str = "z"  # X Letter to reference the dict
+        currXstr: str = " "  # X Letter to reference the dict
         currYint: int = 99  # y int to reference list index of given X dict
+
+        # Pre Hoisting these variable for higher scope access for return
+        moveXstr: str = " "
+        moveYint: int = 99
 
         while selectedPiece == "  ":
             # returns str, int cords
@@ -264,7 +271,7 @@ class Game:
 
                 # Check for pawn moves
                 if isinstance(selectedPiece, Pawn):
-                    print(f"DEBUGGING: Pawn Move triggered on converted: {moveSquare}")
+                    # print(f"DEBUGGING: Pawn Move triggered on converted: {moveSquare}")
                     if self.pawn_move(selectSquare, moveSquare):
                         self.successfulMove = True
                     else:
@@ -309,7 +316,13 @@ class Game:
             except InvalidMove as msg:
                 print(msg)
                 debug_failedCycles += 1
+                self.print_board()
                 continue
+
+        # Only want this return if move successful
+        # +1ing the ints for user-friendly processing
+        # print(f"DEBUGGING: Testing make_move return {currXstr}{currYint + 1} {moveXstr}{moveYint + 1}")
+        return [f"{currXstr}{currYint + 1}", f"{moveXstr}{moveYint + 1}"]
 
     # Check if instance of Move XY is King and update self.kings
     # TODO: NOT WORKING AS INTENDED
@@ -318,6 +331,9 @@ class Game:
             self.kings.remove(_takenPiece)
 
     def InitGame(self):
+        # Initialize custom CSV_Writer Object
+        self.writer = CSV_Writer.CSV_Writer()
+
         # Initiate Game here
         print("Welcome To Basic Chess!")
 
@@ -330,6 +346,7 @@ class Game:
         # represents a round
         forfeit = False
         while not forfeit or self.checkWin() is None:
+            move_row2Write = {'wFrom': '', 'wTo': '', 'bFrom': '', 'bTo': ''}
             for side in sides:
                 resignationPrompt = input("Press Enter to start turn, Anything else will exit>: ")
                 if resignationPrompt != "":
@@ -337,7 +354,14 @@ class Game:
                 else:
                     print(f"{side.upper()}'s Turn\n")
                     self.print_board()
-                    self.make_move(side)
+                    recorded_move = self.make_move(side)  # TODO: Get return info from here and add to writer list
+                    if side == "w":
+                        move_row2Write['wFrom'], move_row2Write['wTo'] = recorded_move
+                    else:
+                        move_row2Write['bFrom'], move_row2Write['bTo'] = recorded_move
+            # Write out the dict to csv after full move completion
+            self.writer.row_write(move_row2Write)
+
         print(f"Game Ended with {self.checkWin()}")
         exit()
 
@@ -365,5 +389,3 @@ class Game:
             print(f"|{dictXkey}")
         self.printHorizontalCordNums()
         print("\n")
-
-
