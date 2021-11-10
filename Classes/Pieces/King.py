@@ -8,8 +8,8 @@ class King(Piece):
         self.hasMoved = False
         self.uncheckedTupleMoves = [(1, 1), (1, 0), (1, -1), (-1, 1), (-1, 0), (-1, -1), (0, 1), (1, -1)]
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.colour + "K"
 
-    def legal_moves(self):
+    def potential_moves(self)  -> list[tuple[str, int]]:
         return super().other_moves()

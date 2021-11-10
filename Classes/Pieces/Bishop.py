@@ -6,8 +6,9 @@ class Bishop(Piece):
         super().__init__(_pieceLocation, _colour)
         self.uncheckedTupleMoves = []
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.colour + "B"
 
-    def legal_moves(self):
+    # returns list of diagonal moves
+    def potential_moves(self)  -> list[tuple[str, int]]:
         return super().diagonal_slides()

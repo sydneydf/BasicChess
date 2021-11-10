@@ -6,8 +6,8 @@ class Rook(Piece):
         super().__init__(_pieceLocation, _colour)
         self.hasMoved = False
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.colour + "R"
 
-    def legal_moves(self):
+    def potential_moves(self)  -> list[tuple[str, int]]:
         return super().linear_slides()

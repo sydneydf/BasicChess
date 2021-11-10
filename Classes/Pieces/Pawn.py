@@ -6,11 +6,11 @@ class Pawn(Piece):
         super().__init__(_piece_location, _colour)
         self.hasMoved = False
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.colour + "P"
 
     # Custom Method for Pawn
-    def get_direction(self):
+    def get_direction(self) -> int:
         direction = 0
         if self.colour == "w":
             direction = 1

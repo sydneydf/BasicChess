@@ -3,12 +3,12 @@ from string import ascii_lowercase
 
 class Piece(object):
     def __init__(self, _piece_location: str, _team: str = "b"):  # _team or color, default to black
+
         # currentLocation references spot on board and not spot on player's version board (Indexing from true 0)
         self.currentLocation = _piece_location
         self.colour = _team  # White or Black, White always goes first
 
         self.uncheckedTupleMoves = []
-        self.isAlive = True
 
     # parse current location into ints that we can check legal moves
     def parse_location(self) -> tuple[int, int]:
@@ -20,6 +20,8 @@ class Piece(object):
 
     # technically static but kinds belongs to Piece class
     # We are trying out pythons type hinting here
+
+    # returns string of X and Int of Y as Tuple
     def return_letter_numCord(self, _xInt: int, _yInt: int) -> tuple[str, int]:
         xLetter = ascii_lowercase[_xInt]
         return xLetter, _yInt
@@ -37,6 +39,7 @@ class Piece(object):
     # @User: "SuperBiasedMan"
     # Indepth learnt the usage of the setup, a very compact iteration
 
+    # returns list of tuple moves for infinitely moving linear pieces
     def linear_slides(self) -> list[tuple[str, int]]:
         xInt, yInt = self.parse_location()
         # 2 checks, Horizontal and vertical
@@ -54,10 +57,10 @@ class Piece(object):
 
         return parsedMoveList
 
+    # returns list of tuple moves for infinitely moving diagonal pieces
     def diagonal_slides(self) -> list[tuple[str, int]]:
         # Min move = 0,0 max = 7,7 #Anything else is an illegal move
         xInt, yInt = self.parse_location()  # e.g. 1, 4
-        # RETURN LIST OF LEGAL MOVES
 
         intTupleMoves = []
         intTupleMoves.extend(zip(range(xInt, 8), range(yInt, 8)))  # Bottom-Right
@@ -72,12 +75,12 @@ class Piece(object):
 
         return parsedMoveList
 
+    # For Interesting moves such as King and Horse preprogrammed list of tuples in respective classes
     def other_moves(self) -> list[tuple[str, int]]:
         xInt, yInt = self.parse_location()
 
         legalList = []
 
-        # will this reference to unchecked work?
         for moveTuple in self.uncheckedTupleMoves:
             unpackedX, unpackedY = moveTuple
 
