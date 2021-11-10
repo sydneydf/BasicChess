@@ -2,11 +2,13 @@ from Classes.Pieces.Piece import Piece
 
 
 class Knight(Piece):
-    def __init__(self, _Colour, _PieceLocation):
-        super().__init__(_Colour, _PieceLocation)
-        
-    def __str__(self):
-        return "N"
 
-    def legalMoves(self):
-        pass
+    def __init__(self, _pieceLocation, _colour="b"):
+        super().__init__(_pieceLocation, _colour)
+        self.uncheckedTupleMoves = [(-2, -1), (-2, 1), (2, -1), (2, 1), (-1, -2), (-1, 2), (1, -2), (1, 2)]
+
+    def __str__(self) -> str:
+        return self.colour + "N"
+
+    def potential_moves(self) -> list[tuple[str, int]]:
+        return super().other_moves()
