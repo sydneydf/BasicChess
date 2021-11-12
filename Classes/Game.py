@@ -18,6 +18,15 @@ from Classes.Pieces.Piece import Piece
 
 # Main Game/Board Interactivity Class
 class Game:
+    # These are hardcoded escaped colours that will custom color terminal text
+    # Hardcoded here because they don't get modified
+    move_response: str = '\033[96m'
+    warning: str = '\033[93m'
+    won: str = '\033[92m'
+    failed: str = '\033[91m'
+    bold: str = '\033[1m'
+    endc: str = '\033[0m'
+
     # self.board indexing in functions may cause false positives in PyCharm IDE
     def __init__(self):
         # store king states in memory for quick ref without searching
@@ -32,11 +41,11 @@ class Game:
             "h": ["  "] * 8,
             # Declaring empty boards
         }
-        self.horizontalLen = 19
-        self.writer = None
+        self.horizontalLen: int = 19
+        self.writer: CSV_Writer = None
         self.InitGame()
-        self.successfulMove = False
-        self.winner = None
+        self.successfulMove: bool = False
+        self.winner: King
 
     def reset_board(self):
 
@@ -83,10 +92,10 @@ class Game:
                     kings.append(item)
         if len(kings) == 1:
             self.winner = kings[0]
-            print("\n" + self.winner.colour + " wins!")
-            print("Game Over! ...")
+            print("\n" + self.won + self.winner.colour + " wins!" + self.endc)
+            print(self.failed + "Game Over! ..." + self.endc)
             time.sleep(1)
-            print("Exiting")
+            print(self.failed + "Exiting" + self.endc)
             exit()
 
     # Split move into workable cords for self.board
@@ -102,9 +111,9 @@ class Game:
         properMoveFormat = False
         xLetter = None
         yInt = None
-        print(msgPrompt)
+        print(Game.warning + msgPrompt + Game.endc)
         while not properMoveFormat:
-            potentialMove = input("Please select a valid coordinate for this>: ")
+            potentialMove = input(Game.warning + "Please select a valid coordinate for this>: " + Game.endc)
             if len(potentialMove) == 2:
 
                 xLetter, yString = potentialMove
@@ -123,9 +132,9 @@ class Game:
                 properMoveFormat = True
 
             else:
-                print("Please Choose a proper board location")
+                print(self.failed + "Please Choose a proper board location" + self.endc)
 
-        return f"{xLetter}{yInt - 1}"
+        return f"{xLetter.lower()}{yInt - 1}"
 
     # Initiate castle move
     def castle_init(self, _combinedSelectCord, _combinedMoveCord):
@@ -239,13 +248,19 @@ class Game:
 
         # MUST GET A VALID PIECE
         selectSquare: str = "  "  # Raw combined string only used via move_splitter(selectSquare)
-        selectedPiece: str = "  "  # Represents specific select spot of dict list
         currXstr: str = " "  # X Letter to reference the dict
         currYint: int = 99  # y int to reference list index of given X dict
 
         # Pre Hoisting these variable for higher scope access for return
         moveXstr: str = " "
         moveYint: int = 99
+
+        # Pre Hoisting these variables for user-friendly feedback statements because we can't re-reference board after
+        # it gets updated
+
+        # These will get updated to store a copy of the items at its given point in time and on board
+        selectedPiece = "  "  # Represents specific select spot of dict list
+        squareToTake = None
 
         while selectedPiece == "  ":
             # returns str, int cords
@@ -255,7 +270,7 @@ class Game:
             if proposedSelected != "  " and proposedSelected.colour == _colour:
                 selectedPiece = self.board[currXstr][currYint]
             else:
-                print(f"Non Valid piece selected: {selectSquare}\n")
+                print(Game.failed + f"Non Valid piece selected: {selectSquare}\n" + Game.endc)
 
         selectedPiece: Piece
 
@@ -322,6 +337,15 @@ class Game:
                 self.print_board()
                 continue
 
+        # Grab Type __name__ of piece for selectedSquare print and its coordinate
+        # Grab Type __name__ of piece for move print and its coordinate
+        # Present as a print for user
+
+        item_toMoveOnStatement = (
+            "*empty square*" if squareToTake == "  " else f"{squareToTake.colour}'s {type(squareToTake).__name__}")
+        print(
+            Game.move_response + f"\n{selectedPiece.colour}'s {type(selectedPiece).__name__} - {currXstr}{currYint + 1} has taken {item_toMoveOnStatement} at {moveXstr}{moveYint + 1}\n" + Game.endc)
+
         # Only want this return if move successful
         # +1ing the ints for user-friendly processing
         # print(f"DEBUGGING: Testing make_move return {currXstr}{currYint + 1} {moveXstr}{moveYint + 1}")
@@ -345,11 +369,12 @@ class Game:
         while not end:
             move_row2Write = {'wFrom': '', 'wTo': '', 'bFrom': '', 'bTo': ''}
             for side in sides:
-                resignationPrompt = input("Press Enter to start turn, Anything else will exit>: ")
+                resignationPrompt = input(f"Press {Game.warning}Enter key{Game.endc} to start turn, Anything else "
+                                          f"will exit>: ")
                 if resignationPrompt != "":
                     end = True
                 else:
-                    print(f"{side.upper()}'s Turn\n")
+                    print("\n" + Game.bold + f"{side.upper()}'s Turn\n" + Game.endc)
                     self.print_board()
                     recorded_move = self.make_move(side)  # TODO: Get return info from here and add to writer list
                     if side == "w":
@@ -361,10 +386,7 @@ class Game:
                         end = False
             # Write out the dict to csv after full move completion
             self.writer.row_write(move_row2Write)
-        if self.winner is not None:
-            print(f"Game Ended with {self.winner.colour}")
-        else:
-            print("Game Forfeited")
+        print("Game Forfeited")
         exit()
 
     # Print Optimizations
