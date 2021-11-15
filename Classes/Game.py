@@ -2,6 +2,7 @@ import random
 import time
 from string import ascii_lowercase
 import CSV_Writer
+import IO_random_access
 from Classes.InvalidMove import InvalidMove
 
 # Long class imports because in different sub directories
@@ -46,6 +47,7 @@ class Game:
         self.InitGame()
         self.successfulMove: bool = False
         self.winner: King
+        self.board_recorder = None
 
     def reset_board(self):
 
@@ -364,6 +366,9 @@ class Game:
 
         self.reset_board()
 
+        # Object assignment after board is created
+        self.board_recorder = IO_random_access.Board_Writer(self.board)
+
         # represents a round
         end = False
         while not end:
@@ -384,6 +389,9 @@ class Game:
 
                     if self.checkWin():
                         end = False
+
+            self.board_recorder.write_board(self.board)
+
             # Write out the dict to csv after full move completion
             self.writer.row_write(move_row2Write)
         print("Game Forfeited")
