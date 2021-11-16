@@ -8,14 +8,15 @@ class Board_Writer:
         # Maybe ask Sandar how we can have a object variable that will work like this instead of having to call it as
         # its accessesd inside the function with the "With statement"
         # self.file = open("IO_board_state.txt", mode="w+")
-        self.write_board(_board)
+        self.fName = "IO_board_state.txt"
+        self.init_write(_board)
 
     # board should be max of 128 characters long, each piece is 2 blocks
     # All in one function to literally overwrite the board each time.
     # probably not efficient but saves time :P
     # Big Brian strats
-    def write_board(self, _board):
-        file = open("IO_board_state.txt", mode="w+")
+    def init_write(self, _board):
+        file = open(self.fName, mode="w+")
         with file:
             # index*2 to write in proper place
             offset = 0
@@ -26,18 +27,19 @@ class Board_Writer:
                     offset += 2
         file.close()
 
-    # move from to indexes
-    # _itemsToUpdate = {'NewContents of select square': index to update}
-    # def update_Board(self, _itemsToUpdate: {'str', int}):
-    #     # TODO:
-    #     offset = 1
-    #     with self.file:
-    #         for newContentKey, contentSQvalue in _itemsToUpdate.items():
-    #             file.seek(contentSQvalue + offset)
-    #             file.write(newContentKey)
-    #         file.close()
-
-    # TODO:  Maybe we can do dict.values to unpack our self.board board into straight values then write those
-    # find letter in ascii_lowercase to get index number and maybe + 11
-    # def dictIndexConverter(self):
-    #     pass
+    # if castled then call 2 times
+    def update_piece(self, piece2write: str, _from: int, _to: int):
+        """
+        :param piece2write: string representation of piece to write
+        :param _from: start square
+        :param _to: where the piece has moved to
+        :return: void (Update of file)
+        """
+        file = open(self.fName, mode="r+")
+        with file:
+            # index*2 to write in proper place
+            file.seek(_from)
+            file.write('  ')
+            file.seek(_to)
+            file.write(piece2write)
+        file.close()

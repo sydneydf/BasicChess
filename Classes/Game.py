@@ -49,8 +49,27 @@ class Game:
         self.winner: King
         self.board_recorder = None
 
-    def reset_board(self):
+    def get_piece_index(self, xStr: str, yInt: int):
+        """
+        INPUT WILL NEED TO BE UNSANITISED STRAIGHT FROM USER INPUT, NOT -1 on Yint
+        :param xStr: a
+        :param yInt: 8
+        :return: index appropriate for BoardWriter RandomAccess
+        """
+        # index = ((ascii_lowercase.find(xStr) + 1) * 8) - (8 - yInt)
+        # return index * 2
 
+        # above function would be way more efficient
+        # otherwise theres probably a more efficient way to do this than down below
+        current_index = 0
+        for xVal, YValueList in self.board.items():
+            for yValueInt, item in enumerate(YValueList):
+                if not (xVal, yValueInt) == (xStr, yInt):
+                    current_index += 2
+                else:
+                    return current_index
+
+    def reset_board(self):
         teams = ["w", "b"]
 
         # Init Pawns
@@ -172,6 +191,10 @@ class Game:
             else:
                 rookY = 6
 
+            self.board_recorder.update_piece(str(selectedPiece), self.get_piece_index(currXstr, currYint),
+                                             self.get_piece_index(moveXstr, moveYint))
+            self.board_recorder.update_piece(str(squareToTake), self.get_piece_index(moveXstr, moveYint),
+                                             self.get_piece_index(moveXstr, rookY))
             selectedPiece.currentLocation = f"{moveXstr}{moveYint}"
             squareToTake.currentLocation = f"{currXstr}{rookY}"
 
@@ -207,14 +230,19 @@ class Game:
             legal_moves.append((ascii_lowercase[currXint + foward], currYint + 1))
         else:
             for Ycheck in range(currYint - 1, currYint + 2, 2):
-                squareCheck = self.board[moveXstr][Ycheck]
-                if isinstance(squareCheck, Piece):
-                    legal_moves.append((ascii_lowercase[currXint + foward], Ycheck))
+                if Ycheck > 7 or Ycheck < 0:
+                    break
+                else:
+                    squareCheck = self.board[moveXstr][Ycheck]
+                    if isinstance(squareCheck, Piece):
+                        legal_moves.append((ascii_lowercase[currXint + foward], Ycheck))
 
         # for move_cord in legal_moves:
         #     print(f"DEBUGGING Legal move cords: {move_cord[0]}, {move_cord[1]}")
 
         if (moveXstr, moveYint) in legal_moves:
+            self.board_recorder.update_piece(str(selectedPiece), self.get_piece_index(currXstr, currYint),
+                                             self.get_piece_index(moveXstr, moveYint))
             selectedPiece.currentLocation = _combinedMoveCord
             selectedPiece.hasMoved = True
             # print(f"Attempting to move from {_combinedSelectCord} TO move square on {_combinedMoveCord}")
@@ -234,6 +262,8 @@ class Game:
         for tupleCord in legal_moves:
             # print(f"DEBUGGING Legal move cords: {tupleCord[0]}, {tupleCord[1]}")
             if (moveXstr, moveYint) == (tupleCord[0], tupleCord[1]):
+                self.board_recorder.update_piece(str(selectedPiece), self.get_piece_index(currXstr, currYint),
+                                                 self.get_piece_index(moveXstr, moveYint))
                 selectedPiece.currentLocation = _combinedMoveCord
                 self.board[moveXstr][moveYint], self.board[currXstr][currYint] = selectedPiece, "  "
                 return True
@@ -389,8 +419,6 @@ class Game:
 
                     if self.checkWin():
                         end = False
-
-            self.board_recorder.write_board(self.board)
 
             # Write out the dict to csv after full move completion
             self.writer.row_write(move_row2Write)
